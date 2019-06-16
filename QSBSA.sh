@@ -1,30 +1,28 @@
 #!/bin/bash
-#SBATCH --job-name=QSBSA
+#SBATCH --job-name=BSA
 #SBATCH -n 8
 #SBATCH -N 1
 #SBATCH --partition=general
 #SBATCH --mail-type=END
 #SBATCH --mem=150G
 #SBATCH --mail-user=qiaoshan.lin@uconn.edu
-#SBATCH -o QSBSA_%j.out
-#SBATCH -e QSBSA_%j.err
+#SBATCH -o BSA_%j.out
+#SBATCH -e BSA_%j.err
 
 module load Trimmomatic/0.36
 module load bowtie2/2.3.1 
 module load samtools/1.3.1
 module load bamtools/2.4.1
 module load bcftools/1.3.1
-module load R
+module load R/3.4.3
 
-#cp /linuxshare/users/qlin/DNA/Flayed5/* ./ 
 #path to genome reference fasta file 
-ref=~/resource/SL9/SL9_pseudoscaffolds_formatted.fa
+ref=
 #path to forward reads fastq(.gz) file
-read1=/home/CAM/qlin/BSA/flayed5_latest/Flayed_H2N3KDMXX_L1_1.clean.fq.gz
+read1=
 #path to reverse reads fastq(.gz) file
-read2=/home/CAM/qlin/BSA/flayed5_latest/Flayed_H2N3KDMXX_L1_2.clean.fq.gz
+read2=
 
-#Flayed_H2N3KDMXX_L1_1.clean.fq.gz  Flayed_H2N3KDMXX_L1_2.clean.fq.gz
 mkdir tmp
 cd tmp
 ####### reads trimming #######
@@ -71,15 +69,6 @@ echo Finish SNP calling and filtering
 ####### divergence filter and count SNPs ########
 cd ..
 echo Begin divergence filtering and SNPs counting...
-perl ~/scripts/QSBSA.pl -f=./tmp/snp3.vcf -v=off
-if [ "$ref" = "/home/CAM/qlin/resource/SL9/SL9_pseudoscaffolds_formatted.fa" ]
-then
-grep --perl-regexp '^(contig|1|2|3|4|5|6|7|8|9|10|11|12|13|14)\t' SNPCount.txt > tmp.txt
-mv tmp.txt SNPCount.txt
-max=`cut -f3 SNPCount.txt |sort -nr|head -1`
-max=`expr $max + 2`
-Rscript ~/scripts/QSBSA.r SNPCount $max
-fi
-
+perl QSBSA.pl -f=./tmp/snp3.vcf -v=off
 echo Finish divergence filtering and SNPs counting
 
