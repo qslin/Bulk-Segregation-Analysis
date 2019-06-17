@@ -19,4 +19,3 @@ tu <- ggplot(data = A, aes(x=position, y=count)) +
       scale_y_continuous(expand = c(0,0), limits = c(0,as.numeric(args[2])), breaks = seq(0,as.numeric(args[2]),4)) +
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank()) 
 tu
-
