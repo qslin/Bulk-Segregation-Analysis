@@ -1,1 +1,1 @@
-These scripts are used for performing bulk segregation analysis
+### These scripts are used for performing bulk segregation analysis
