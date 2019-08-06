@@ -109,11 +109,6 @@ snpcount3=`grep -c -v '^#' snp3.vcf`
 echo Round 3: $snpcount3 SNPs
 
 echo Finish SNP calling and filtering
-#newvcf=`pwd` 
-#echo "$newvcf/snp2.vcf">> /home/CAM/qlin/BSA/vcf.txt
-#sort /home/CAM/qlin/BSA/vcf.txt |uniq > /home/CAM/qlin/BSA/newvcf.txt
-#mv /home/CAM/qlin/BSA/newvcf.txt /home/CAM/qlin/BSA/vcf.txt
-#echo VCF library updated at /home/CAM/qlin/BSA/vcf.txt
 }
 
 filter()
