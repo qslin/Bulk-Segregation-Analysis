@@ -329,7 +329,7 @@ else
 	array=( "$read1 $read2" )
 fi 
 
-mkdir tmp
+if [[ `ls -l | grep tmp` ]]; then echo overwrite previous results in tmp directory;else mkdir tmp;fi
 cd tmp
 
 case $step in
