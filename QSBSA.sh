@@ -69,7 +69,7 @@ do
 	bamarray=("${bamarray[@]}" $n"_reads.bam")
 done
 samtools merge reads.bam ${bamarray[@]}
-samtools sort -@ 8 -o reads.sort.bam -T samtmp -O bam -@ 8 reads.bam
+samtools sort -@ 8 -o reads.sort.bam -T samtmp -O bam reads.bam
 rm *_reads.sam *_reads.bam reads.bam
 bamtools filter -in reads.sort.bam -out reads.sort.filter1.bam -tag "XM:<3"
 samtools depth -aa -q 20 -Q 20 reads.sort.filter1.bam > depth.txt
