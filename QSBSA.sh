@@ -125,7 +125,7 @@ echo Finish SNPs filtering
 annotate()
 {
 if [ "$gtf" != "n" ]; then
-	awk '{print "$1~/"$1"/&&$4<="$2"&&$5>="$2"&&$3~/CDS|intron/{print "NR"\"\\t\"$0}"}' SNP.vcf > cmd.txt
+	awk '{print "$1~/"$1"/&&$4<="$2"&&$5>="$2"&&$3~/CDS|intron/{print "NR"\"\\\\t\"$0}"}' SNP.vcf > cmd.txt
 	pos=()
 	while read line; do   pos+=("$line");   done < cmd.txt
 	snp=()
@@ -151,7 +151,7 @@ if [ "$gtf" != "n" ]; then
                 			snpchr=`echo "${snp[$p]}"|awk '{print $1}'`
                 			normstart=`echo "$(($snppos-$snpframe))"`
                 			normend=`echo "$(($normstart+2))"`
-               				samtools faidx $ref $snpchr:$normstart-$normend | tail -n +2 |awk -v frame="$snpframe" '{split($1,a,"");b=tolower(a[frame+1]);a[frame+1]=b;print a[1]a[2]a[3]"\t"frame}'|tr "\n" "\t"> codontmp
+               				samtools faidx $ref $snpchr:$normstart-$normend | tail -n +2 |awk -v frame="$snpframe" '{split($1,a,"");b=tolower(a[frame+1]);a[frame+1]=b;print a[1]a[2]a[3]}'|tr "\n" "\t"> codontmp
 					echo "${snp[$p]}"|tr "\n" "\t"|cat - tmp codontmp |sed 's/$/\n/' >> SNP.annotate.vcf.tmp
 				elif [[ $feature =~ "CDS" && $strand =~ "-" ]];then
 					startpos=`echo $s|awk '{print $6}'`
@@ -161,7 +161,7 @@ if [ "$gtf" != "n" ]; then
                                         snpchr=`echo "${snp[$p]}"|awk '{print $1}'`
                                         normstart=`echo "$(($snppos+$snpframe))"`
                                         normend=`echo "$(($normstart-2))"`
-                                        samtools faidx $ref $snpchr:$normend-$normstart | tail -n +2 |perl -lpe 'tr/ATGCatgc/TACGTACG/;$_=reverse $_'|awk -v frame="$snpframe" '{split($1,a,"");b=tolower(a[frame+1]);a[frame+1]=b;print a[1]a[2]a[3]"\t"frame}'|tr "\n" "\t"> codontmp
+                                        samtools faidx $ref $snpchr:$normend-$normstart | tail -n +2 |perl -lpe 'tr/ATGCatgc/TACGTACG/;$_=reverse $_'|awk -v frame="$snpframe" '{split($1,a,"");b=tolower(a[frame+1]);a[frame+1]=b;print a[1]a[2]a[3]}'|tr "\n" "\t"> codontmp
                                         echo "${snp[$p]}"|tr "\n" "\t"|cat - tmp codontmp |sed 's/$/\n/' >> SNP.annotate.vcf.tmp
 				else
 					echo "${snp[$p]}"|tr "\n" "\t"|cat - tmp |sed 's/$/\n/' >> SNP.annotate.vcf.tmp
@@ -329,7 +329,7 @@ else
 	array=( "$read1 $read2" )
 fi 
 
-mkdir tmp || { echo 'tmp exists; overwrite previous files.' ; }
+mkdir tmp
 cd tmp
 
 case $step in
