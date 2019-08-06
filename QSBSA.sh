@@ -125,7 +125,7 @@ echo Finish SNPs filtering
 annotate()
 {
 if [ "$gtf" != "n" ]; then
-	awk '{print "\$1~/"$1"/&&\$4<="$2"&&\$5>="$2"&&\$3~/CDS|intron/{print "NR"\"\\\\t\"\$0}"}' SNP.vcf > cmd.txt
+	awk '{print "$1~/"$1"/&&$4<="$2"&&$5>="$2"&&$3~/CDS|intron/{print "NR"\"\\t\"$0}"}' SNP.vcf > cmd.txt
 	pos=()
 	while read line; do   pos+=("$line");   done < cmd.txt
 	snp=()
@@ -134,24 +134,35 @@ if [ "$gtf" != "n" ]; then
 	do
 		awk "${pos[$p]}" $gtf |cut -f4-6,10 |tr "\n" "\t"> snptmp
 		awk "${pos[$p]}" $gtf > snptmp2
-		feature=`awk "${pos[$p]}" $gtf |cut -f4`
-		if [[ -s "snptmp" && $feature =~ "CDS" ]];then 
+#		feature=`awk "${pos[$p]}" $gtf |cut -f4`
+		if [[ -s "snptmp" ]];then 
 			snptmp=()
 			while read line; do   snptmp+=("$line");   done < snptmp2
 			for s in "${snptmp[@]}"
 			do
-				echo "$s"|cut -f4-6,10 |tr "\n" "\t" > tmp
+				echo "$s"|cut -f4-6,8,10 |tr "\n" "\t" > tmp
 				feature=`echo $s|awk '{print $4}'`
-				if [[ $feature =~ "CDS" ]];then
+				strand=`echo $s|awk '{print $8}'`
+				if [[ $feature =~ "CDS" && $strand =~ "+" ]];then
 					startpos=`echo $s|awk '{print $5}'`
 		        	        startframe=`echo $s|awk '{print $9}'`
         			        snppos=`echo "${snp[$p]}"|awk '{print $2}'`
-        			        snpframe="$(( (($snppos-$startpos)%3+$startframe)%3 ))"
+        			        snpframe="$(( (($snppos-$startpos)%3-$startframe+3)%3 ))"
                 			snpchr=`echo "${snp[$p]}"|awk '{print $1}'`
                 			normstart=`echo "$(($snppos-$snpframe))"`
-                			normend=`echo "$(($snppos-$snpframe+2))"`
+                			normend=`echo "$(($normstart+2))"`
                				samtools faidx $ref $snpchr:$normstart-$normend | tail -n +2 |awk -v frame="$snpframe" '{split($1,a,"");b=tolower(a[frame+1]);a[frame+1]=b;print a[1]a[2]a[3]"\t"frame}'|tr "\n" "\t"> codontmp
 					echo "${snp[$p]}"|tr "\n" "\t"|cat - tmp codontmp |sed 's/$/\n/' >> SNP.annotate.vcf.tmp
+				elif [[ $feature =~ "CDS" && $strand =~ "-" ]];then
+					startpos=`echo $s|awk '{print $6}'`
+                                        startframe=`echo $s|awk '{print $9}'`
+                                        snppos=`echo "${snp[$p]}"|awk '{print $2}'`
+                                        snpframe="$(( (($startpos-$snppos)%3-$startframe+3)%3 ))"
+                                        snpchr=`echo "${snp[$p]}"|awk '{print $1}'`
+                                        normstart=`echo "$(($snppos+$snpframe))"`
+                                        normend=`echo "$(($normstart-2))"`
+                                        samtools faidx $ref $snpchr:$normend-$normstart | tail -n +2 |perl -lpe 'tr/ATGCatgc/TACGTACG/;$_=reverse $_'|awk -v frame="$snpframe" '{split($1,a,"");b=tolower(a[frame+1]);a[frame+1]=b;print a[1]a[2]a[3]"\t"frame}'|tr "\n" "\t"> codontmp
+                                        echo "${snp[$p]}"|tr "\n" "\t"|cat - tmp codontmp |sed 's/$/\n/' >> SNP.annotate.vcf.tmp
 				else
 					echo "${snp[$p]}"|tr "\n" "\t"|cat - tmp |sed 's/$/\n/' >> SNP.annotate.vcf.tmp
 				fi
