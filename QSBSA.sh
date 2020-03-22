@@ -37,7 +37,7 @@ usage()
     echo "    -c | --codingseq  To provide the coding sequence for annotation of SNPs in case no gtf file exists. Default: /home/CAM/qlin/resource/LF10/LF10T_v1.2.fa"
     echo "    -h | --help	To see the usage."
     echo "Notes:"
-    echo "    If there are more than 2 reads files, save all paired reads files(including paths) to one txt file (one pair per line, seperated by a space) and use option -f."
+    echo "    If there are more than 2 reads files, save all paired reads files(including full paths) to one txt file (one pair per line, seperated by a space) and use option -f."
 }
 
 trim()
