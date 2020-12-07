@@ -37,7 +37,7 @@ usage()
     echo "    -c | --codingseq  To provide the coding sequence for annotation of SNPs in case no gtf file exists. Default: /home/CAM/qlin/resource/LF10/LF10T_v1.2.fa"
     echo "    -h | --help	To see the usage."
     echo "Notes:"
-    echo "    If there are more than 2 reads files, save all paired reads files(including paths) to one txt file (one pair per line, seperated by a space) and use option -f."
+    echo "    If there are more than 2 reads files, save all paired reads files(including full paths) to one txt file (one pair per line, seperated by a space) and use option -f."
 }
 
 trim()
@@ -86,14 +86,13 @@ blim=`echo "$(($avg*10/25))"`
 bcftools mpileup -Ou --threads 8 -Q 20 -q 20 -f $ref reads.sort.filter1.bam | bcftools call -Ou --threads 8 -mv | bcftools filter -e '%QUAL<20' > snp0.vcf
 snpcount0=`grep -c -v '^#' snp0.vcf`
 echo Round 0: $snpcount0 SNPs
-#covflt="DP<$blim||DP>$ulim"
 covflt="(DP4[0]+DP4[1]+DP4[2]+DP4[3])<$blim||(DP4[0]+DP4[1]+DP4[2]+DP4[3])>$ulim"
 bcftools filter -e $covflt snp0.vcf  > snp1.vcf
 echo Filter SNPs by coverage: $covflt
 snpcount1=`grep -c -v '^#' snp1.vcf`
 echo Round 1: $snpcount1 SNPs
 
-frqflt="(DP4[2]+DP4[3])/(DP[0]+DP[1]+DP4[2]+DP4[3])<0.25"
+frqflt="(DP4[2]+DP4[3])/(DP4[0]+DP4[1]+DP4[2]+DP4[3])<0.25"
 bcftools filter -e $frqflt snp1.vcf > snp2.vcf
 bcftools norm -f $ref snp2.vcf -Ov -o snp2.norm.vcf
 mv snp2.norm.vcf snp2.vcf
@@ -101,10 +100,11 @@ echo Filter SNPs by alt frequency
 snpcount2=`grep -c -v '^#' snp2.vcf`
 echo Round 2: $snpcount2 SNPs
 
-awk '{split($10, a, ":");split(a[2], b, ",");if (b[1]>40&&b[2]>20&&b[3]==0) print}' snp2.vcf > snp3.vcf
+frqflt2="(DP4[2]+DP4[3])/(DP4[0]+DP4[1]+DP4[2]+DP4[3])<0.9"
+bcftools filter -e $frqflt2 snp2.vcf | bcftools filter -e '%QUAL<200' | bcftools filter -e 'MQ<40' | bcftools filter -e 'MQSB<0.5' | awk '{split($10, a, ":");split(a[2], b, ",");if (b[1]>40&&b[2]>20&&b[3]==0) print}' > snp3.vcf
 grep '^#' snp2.vcf |cat - snp3.vcf > tmp
 mv tmp snp3.vcf
-echo Filter SNPs by homozygousity
+echo Filter SNPs by homozygousity and mapping quality
 snpcount3=`grep -c -v '^#' snp3.vcf`
 echo Round 3: $snpcount3 SNPs
 
