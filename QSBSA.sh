@@ -100,10 +100,11 @@ echo Filter SNPs by alt frequency
 snpcount2=`grep -c -v '^#' snp2.vcf`
 echo Round 2: $snpcount2 SNPs
 
-awk '{split($10, a, ":");split(a[2], b, ",");if (b[1]>40&&b[2]>20&&b[3]==0) print}' snp2.vcf > snp3.vcf
+frqflt2="(DP4[2]+DP4[3])/(DP4[0]+DP4[1]+DP4[2]+DP4[3])<0.9"
+bcftools filter -e $frqflt2 snp2.vcf | bcftools filter -e '%QUAL<200' | bcftools filter -e 'MQ<40' | bcftools filter -e 'MQSB<0.5' | awk '{split($10, a, ":");split(a[2], b, ",");if (b[1]>40&&b[2]>20&&b[3]==0) print}' > snp3.vcf
 grep '^#' snp2.vcf |cat - snp3.vcf > tmp
 mv tmp snp3.vcf
-echo Filter SNPs by homozygousity
+echo Filter SNPs by homozygousity and mapping quality
 snpcount3=`grep -c -v '^#' snp3.vcf`
 echo Round 3: $snpcount3 SNPs
 
