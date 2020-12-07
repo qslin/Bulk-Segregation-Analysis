@@ -86,14 +86,13 @@ blim=`echo "$(($avg*10/25))"`
 bcftools mpileup -Ou --threads 8 -Q 20 -q 20 -f $ref reads.sort.filter1.bam | bcftools call -Ou --threads 8 -mv | bcftools filter -e '%QUAL<20' > snp0.vcf
 snpcount0=`grep -c -v '^#' snp0.vcf`
 echo Round 0: $snpcount0 SNPs
-#covflt="DP<$blim||DP>$ulim"
 covflt="(DP4[0]+DP4[1]+DP4[2]+DP4[3])<$blim||(DP4[0]+DP4[1]+DP4[2]+DP4[3])>$ulim"
 bcftools filter -e $covflt snp0.vcf  > snp1.vcf
 echo Filter SNPs by coverage: $covflt
 snpcount1=`grep -c -v '^#' snp1.vcf`
 echo Round 1: $snpcount1 SNPs
 
-frqflt="(DP4[2]+DP4[3])/(DP[0]+DP[1]+DP4[2]+DP4[3])<0.25"
+frqflt="(DP4[2]+DP4[3])/(DP4[0]+DP4[1]+DP4[2]+DP4[3])<0.25"
 bcftools filter -e $frqflt snp1.vcf > snp2.vcf
 bcftools norm -f $ref snp2.vcf -Ov -o snp2.norm.vcf
 mv snp2.norm.vcf snp2.vcf
